@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String        @id @default(uuid())
+  email       String        @unique
+  name        String?
+  contracts   ApiContract[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model ApiContract {
+  id          String        @id @default(uuid())
+  userId      String
+  endpoint    String
+  headers     Json          // JSON for headers
+  payload     Json          // JSON for payload
+  version     Int           @default(1)
+  user        User          @relation(fields: [userId], references: [id])
+  versions    ApiVersion[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model ApiVersion {
+  id          String        @id @default(uuid())
+  contractId  String
+  headers     Json
+  payload     Json
+  version     Int
+  createdAt   DateTime      @default(now())
+  contract    ApiContract   @relation(fields: [contractId], references: [id])
+}
