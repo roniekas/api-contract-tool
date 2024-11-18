@@ -14,33 +14,69 @@ datasource db {
 }
 
 model User {
-  id          String        @id @default(uuid())
-  email       String        @unique
-  name        String?
-  contracts   ApiContract[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id            String        @id @default(cuid())
+  name          String?
+  email         String?       @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  ApiContract   ApiContract[]
 }
 
 model ApiContract {
-  id          String        @id @default(uuid())
-  userId      String
-  endpoint    String
-  headers     Json          // JSON for headers
-  payload     Json          // JSON for payload
-  version     Int           @default(1)
-  user        User          @relation(fields: [userId], references: [id])
-  versions    ApiVersion[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id        String       @id @default(uuid())
+  userId    String
+  endpoint  String
+  headers   Json // JSON for headers
+  payload   Json // JSON for payload
+  version   Int          @default(1)
+  user      User         @relation(fields: [userId], references: [id])
+  versions  ApiVersion[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 }
 
 model ApiVersion {
-  id          String        @id @default(uuid())
-  contractId  String
-  headers     Json
-  payload     Json
-  version     Int
-  createdAt   DateTime      @default(now())
-  contract    ApiContract   @relation(fields: [contractId], references: [id])
+  id         String      @id @default(uuid())
+  contractId String
+  headers    Json
+  payload    Json
+  version    Int
+  createdAt  DateTime    @default(now())
+  contract   ApiContract @relation(fields: [contractId], references: [id])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id])
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }

@@ -21,15 +21,23 @@ export const authOptions = {
         strategy: "jwt",
     },
     callbacks: {
-        async session({session, token}: { session: { user: { id: () => string } }, token: string }) {
-            session.user.id = token.sub;
+        async session({ session, token }: { session: any; token: any }) {
+            if (token?.sub) session.user.id = token.sub;
             return session;
         },
-        async jwt({token, user}: { token: { id: string }, user: { id: string } }) {
+        async jwt({ token, user }: { token: any; user?: any }) {
             if (user) {
-                token.id = user.id;
+                token.isNewUser = await prisma.user
+                    .findUnique({where: {id: user.id}})
+                    .then((existingUser) => !existingUser);
             }
             return token;
+        },
+        async redirect({ url, baseUrl, token }: { url: string; baseUrl: string; token?: any }) {
+            if (token?.isNewUser) {
+                return `${baseUrl}/welcome`;
+            }
+            return `${baseUrl}/dashboard`;
         },
     },
     theme: {
