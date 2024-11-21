@@ -1,18 +1,16 @@
 "use client"
 import './globals.css';
 
-import {SessionProvider} from "next-auth/react";
-import {AuthProvider} from "@/context";
+import {AppProvider} from "@/context/app/app-provider";
+import React from "react";
 
 export default function RootLayout({children}: { children: React.ReactNode }) {
     return (
         <html lang="en">
         <body>
-        <SessionProvider>
-            <AuthProvider>
-                {children} {/* This will render the page content */}
-            </AuthProvider>
-        </SessionProvider>
+        <AppProvider>
+            {children}
+        </AppProvider>
         </body>
         </html>
     );
