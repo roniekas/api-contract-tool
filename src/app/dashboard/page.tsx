@@ -1,19 +1,23 @@
 "use client";
 
-import { useSession, signIn } from "next-auth/react"
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Dashboard() {
     const { data: session, status } = useSession();
+    const router = useRouter();
 
-    if (status === "loading") return <p>Loading...</p>;
-    if (!session) {
-        return (
-            <div>
-                <p>You need to be signed in to view this page.</p>
-                <button onClick={() => signIn()}>Sign in</button>
-            </div>
-        );
-    }
+    useEffect(() => {
+        if (status === "authenticated" && !session || !session) {
+            router.replace("/auth/signin");
+        }
+    }, [session, status, router]); // Dependencies ensure this effect runs correctly
 
-    return <div>Welcome to your dashboard, {session.user?.name}</div>;
+    if (status === "loading") return <p>Loading..</p>;
+
+    // Avoid rendering content until the redirection logic has been processed
+    if (status === "unauthenticated") return null;
+
+    return <div>Welcome to your dashboard, {session?.user?.name}</div>;
 }
